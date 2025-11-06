@@ -4,14 +4,57 @@
 ## Concept Questions
 
 * What is the difference between mutable and immutable data types in Python?
+
+    - Mutable data types → can be changed after creation (their contents can be modified in place).
+    - Immutable data types → cannot be changed after creation (any modification creates a new object).
+
 * What's the difference between a list and a tuple in Python?
+
+    - List: Mutable — can be changed after creation
+    - Tuple: Immutable — cannot be changed once created
+    - Syntax: [ ] | ( )
+    - Methods Available: Many (e.g. append(), remove(), sort()) | Few (only count() and index())
+    - Performance: Slightly slower (mutable) | Faster (immutable and hashable)
+    - Use Cases: When you need to modify, add, or remove items | When you need fixed data that shouldn’t change
+    - Hashable (usable as dict key): No | Yes (if it contains only immutable elements)
+
 * What's the difference between `list.append()`, `list.extend()`, and `list.insert()`?
+
+    - append(): Adds a single element to the end of the list. It doesn’t flatten or unpack anything. It always increases the list length by 1
+    - extend(): Adds all elements from another iterable (like a list, tuple, or string) to the end of the list. It iterates through the argument and appends each element. Extends the list with multiple elements.
+    - insert(): list.insert(index, x), Inserts a single element at a specific position (index). Does not replace existing elements — it shifts them to the right.
+
 * Explain the difference between shallow copy and deep copy between `list.copy()`, `list[:]`, and `copy.deepcopy()`
+
+    - Shallow Copy (list[:] & list.copy()) : Creates a new container object (like a new list), but does not recursively copy the inner (nested) objects. Instead, it just copies references to them. So the operation changes to inner elements affect both copies.
+    - Deep Copy (copy.deepcopy()): Creates a new container and recursively copies all nested objects. So the two objects become completely independent.
+
 * What are the advantages and disadvantages of using set comprehensions vs converting a list comprehension to a set?
+
+    - Set Comprehension: Uses curly braces {} directly.
+    - converting a list comprehension to a set: Creates a list first, then converts it into a set.
+    - They produce the same result, but differ internally in efficiency, readability, and intent.
+
 * What's the time complexity difference between checking membership (`in` operator) in a list vs a set?
+
+    - Lists are using Linear Search, Python checks each element one by one, O(n)
+    - Sets are Hash Table Lookup, Sets store elements by their hash value, so membership check directly computes the hash and jumps to the bucket where the item should be. O(1) 
+
 * Why are tuples immutable but you can still modify a list inside a tuple?
+   
+    - When we say a tuple is immutable, it means: Once created, the tuple’s structure — i.e., the sequence of object references it holds — cannot be changed. That means: You cannot add, remove, or replace elements in the tuple. But the objects inside the tuple can still change if they are mutable themselves.
+
 * What will `my_list[::2]`, `my_list[::-1]`, and `my_list[1::3]` return for `my_list = [0,1,2,3,4,5,6,7,8,9]`?
+
+    - `my_list[::2]` → “Every 2nd element”. Result: [0, 2, 4, 6, 8]
+    - `my_list[::-1]` → “Reversed list”. Result: [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+    - `my_list[1::3]` → “Every 3rd element starting from index 1”. Result: [1, 4, 7]
+
 * What's the difference between `remove()`, `pop()`, and `del` for lists?
+
+    - remove(value): Removes the first matching value in the list.
+    - pop(i): Removes and returns the element at the given index.
+    - del list[i]: Deletes an element by index, or a slice of elements. Does not return anything.
 
 ---
 
