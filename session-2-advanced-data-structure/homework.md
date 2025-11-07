@@ -88,7 +88,10 @@ def two_sum(nums: list[int], target: int) -> list[int]:
         >>> two_sum([3, 2, 4], 6)
         [1, 2]
     """
-    pass
+    for i, num in enumerate(nums):
+        complement = target - num
+        if complement in nums[i+1:]:
+            return [i, nums.index(complement, i+1)]
 ```
 
 ---
@@ -123,7 +126,15 @@ def length_of_longest_substring(s: str) -> int:
         >>> length_of_longest_substring("pwwkew")
         3  # "wke"
     """
-    pass
+    last = {}           
+    start = 0
+    best = 0
+    for i, ch in enumerate(s):
+        if ch in last and last[ch] >= start:
+            start = last[ch] + 1
+        last[ch] = i
+        best = max(best, i - start + 1)
+    return best
 ```
 
 ---
@@ -159,7 +170,17 @@ def product_except_self(nums: list[int]) -> list[int]:
         >>> product_except_self([-1, 1, 0, -3, 3])
         [0, 0, 9, 0, 0]
     """
-    pass
+    n = len(nums)
+    res = [1] * n
+    prefix = 1
+    for i in range(n):
+        res[i] = prefix
+        prefix *= nums[i]
+    suffix = 1
+    for i in range(n - 1, -1, -1):
+        res[i] *= suffix
+        suffix *= nums[i]
+    return res
 ```
 
 ---
@@ -194,5 +215,11 @@ def group_anagrams(strs: list[str]) -> list[list[str]]:
         >>> group_anagrams(["a"])
         [["a"]]
     """
-    pass
+    groups = {}
+    for s in strs:
+        key = ''.join(sorted(s))
+        if key not in groups:
+            groups[key] = []
+        groups[key].append(s)
+    return list(groups.values())
 ```
