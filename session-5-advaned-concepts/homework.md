@@ -1,16 +1,51 @@
 # Python Coding Questions - Session 3: Recursion & Functions
 
 ## Concept Questions
+
 - What is a decorator in Python, and where is it used?
+  - What: A function that wraps another function to add behavior without changing its code.
+  - Where used: Logging, timing, caching (functools.lru_cache), auth, validation.
+  
 - What's the difference between a generator and a regular function that returns a list?
+  - Generator: uses yield; produces a lazy sequence one item at a time; stateful between yields.
+  - List-returning function: builds entire list in memory then returns it.
+  - Generators return an iterator; lists are realized containers.
+  
 - When would you choose generators over lists, and what are the memory implications?
+  - Use generators when: Data is large/unknown or streaming. You want constant memory (O(1)) and early consumption.
+  - Use when you need random access, len(), multiple passes, or materialize results. O(N)
+  
 - Explain the difference between threading, multiprocessing, and asyncio in Python
+  - Threading: multiple threads within one process; shared memory; good for I/O-bound tasks; affected by GIL (only one thread executes Python bytecode at a time).
+  - Multiprocessing: multiple processes with separate memory; bypasses GIL; best for CPU-bound work; higher startup/IPC overhead.
+  - Asyncio: single thread, single process, event loop with await on non-blocking I/O; excellent for high-concurrency I/O (sockets, HTTP), not for heavy CPU.
+  
 - What is the Global Interpreter Lock (GIL)? How does it affect threading and multiprocessing?
+  - A mutex in CPython ensuring only one thread executes Python bytecode at a time.
+  - Effect:
+    - Threading: no speedup for pure CPU-bound Python code; okay for I/O (threads release GIL during blocking I/O or C extensions).
+    - Multiprocessing: not affected—each process has its own interpreter and GIL.
+  
 - When to use threading, asyncio, multiprocess?
+  - Threading: Many I/O-bound tasks (web requests, file/network I/O), simpler than asyncio; moderate concurrency (<1k tasks).
+  - Asyncio: Massive I/O concurrency (thousands of sockets), cooperative tasks, needs async/await ecosystem.
+  - Multiprocessing: CPU-bound workloads (numerical loops, image processing) or when C extensions aren’t used.
+
 - What are CPU-bound vs IO-bound tasks?
-- What's the difference between yield and return in a function
+  - CPU-bound: time spent computing (e.g., hashing, ML loops). Optimize with algorithms, vectorization, multiprocessing or native code.
+  - I/O-bound: time waiting on external resources (disk, network). Optimize with threading/asyncio.
+
+- What's the difference between yield and return in a function?
+  - return x: ends function immediately; provides a final value.
+  - yield x: pauses function, returns one item, and resumes later; function becomes a generator.
+  - A generator can also return (raises StopIteration, optionally with a value accessible via .value in low-level usage).
+
 - What's the difference between using open() with explicit close() vs using the with statement
+  - with is better, which automatically closes on success/error; safer; clearer; avoids resource leaks.
+  
 - How to handle exceptions? Why is exception handling important?
+  - try, except SpecificError as e, else, finally
+  - Why important: robust error recovery, resource safety, clearer failure semantics, better observability.
 
 ---
 
@@ -33,9 +68,17 @@ def cache_with_log(func):
     Cache decorator that logs all activity.
     Should work with any function signature.
     """
-    
+    cache = {}
     def wrapper(*args, **kwargs):
-        pass
+        key = (args, frozenset(kwargs.items()))
+        if key in cache:
+            print(f"[CACHE HIT] {func.__name__} args={args}, kwargs={kwargs}")
+            return cache[key]
+        else:
+            print(f"[CACHE MISS] {func.__name__} args={args}, kwargs={kwargs}")
+            result = func(*args, **kwargs)
+            cache[key] = result
+            return result
     
     return wrapper
 
@@ -85,6 +128,7 @@ Create a generator that takes an iterable and yields items in batches of a speci
 
 **Description:**  
 ```python
+
 def batch(iterable, batch_size):
     """
     Generator that yields items in batches.
@@ -104,7 +148,14 @@ def batch(iterable, batch_size):
         [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9]]
     """
 
-    pass
+    current = []
+    for i in iterable:
+        current.append(i)
+        if len(current) == batch_size:
+            yield current
+            current = []
+    if current:
+        yield current
 
 
 # Test cases
@@ -145,9 +196,35 @@ def async_retry(max_attempts=3, base_delay=1, backoff_factor=2):
             # Will retry with delays: 1s, 2s, 4s
             pass
     """
-    def decorator():
-        # TODO: Implement a decorator with retrying logic with exponential backoff
-        # It Will retry with delays: 1s, 2s, 4s if error raises until success
+    if max_attempts < 1:
+        raise ValueError("max_attempts must be >= 1")
+
+    def decorator(func):
+        if not asyncio.iscoroutinefunction(func):
+            raise TypeError("async_retry can only be applied to async functions")
+
+        @functools.wraps(func)
+        async def wrapper(*args, **kwargs):
+            last_exc = None
+            for attempt in range(1, max_attempts + 1):
+                try:
+                    print(f"[retry] {func.__name__} attempt {attempt}/{max_attempts}")
+                    return await func(*args, **kwargs)
+                except retry_exceptions as exc:
+                    last_exc = exc
+                    if attempt == max_attempts:
+                        print(f"[retry] {func.__name__} exhausted after {attempt} attempts")
+                        raise
+                    # exponential backoff: base_delay * backoff_factor^(attempt-1)
+                    delay = base_delay * (backoff_factor ** (attempt - 1))
+                    if jitter > 0:
+                        delay += random.uniform(0, jitter)
+                    print(f"[retry] {func.__name__} backoff {delay:.2f}s due to: {exc}")
+                    await asyncio.sleep(delay)
+            # Should not reach here; raise for safety
+            raise last_exc
+
+        return wrapper
 
     return decorator
 
@@ -188,6 +265,5 @@ async def test_retry():
         print(f"All retries failed: {e}\n")
 
 
-# Run test
-# asyncio.run(test_retry())
+asyncio.run(test_retry())
 ```
