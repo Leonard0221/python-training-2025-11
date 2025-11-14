@@ -3,8 +3,8 @@
 ## Concept Questions
 
 - What is a decorator in Python, and where is it used?
-  - What: A function that wraps another function to add behavior without changing its code.
-  - Where used: Logging, timing, caching (functools.lru_cache), auth, validation.
+  - What: A higher order function that wraps another function to add behavior without changing its code.
+  - Where used: Enhancing code reusability. Logging, timing, caching (functools.lru_cache), auth, validation.
   
 - What's the difference between a generator and a regular function that returns a list?
   - Generator: uses yield; produces a lazy sequence one item at a time; stateful between yields.
