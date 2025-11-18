@@ -3,11 +3,41 @@
 ## Concept Questions
 
 - What are primary keys and foreign keys? How are they used in relational databases?
+  - A primary key uniquely identifies each record in a table. It must be unique and not null. Every table usually has one primary key (like an ID column).
+  - A foreign key is a column that refers to the primary key in another table. It creates a link (relationship) between two tables. For example, in a library database, borrowed_items.member_id is a foreign key that references members.id, ensuring that every borrowed record corresponds to a real member.
+  
 - What is the difference between INNER JOIN, LEFT JOIN, and FULL OUTER JOIN?
+  - INNER JOIN: Returns only the rows where there’s a match in both tables.
+  - LEFT JOIN (or LEFT OUTER JOIN): Returns all rows from the left table, plus matching rows from the right. If there’s no match, the right side will be NULL.
+  - FULL OUTER JOIN: Returns all rows from both tables. If there’s no match, the missing side will show NULL.
+
 - What is normalization?
+  - Normalization is the process of organizing a database to reduce data redundancy and improve data integrity.
+  - It means breaking down large, repetitive tables into smaller related ones, connected by keys.
+  - Typical normalization forms:
+    - 1NF (First Normal Form): No repeating groups — each column holds atomic values.
+    - 2NF (Second Normal Form): Every non-key column depends on the whole primary key.
+    - 3NF (Third Normal Form): No transitive dependencies — columns depend only on the key.
+  
 - What are the different types of database relationships (1:1, 1:many, many:many) and how do you implement them in SQL?
+  - One-to-One (1:1): Each record in one table relates to only one record in another. Example: members: memberships. Implement using a foreign key with UNIQUE constraint.
+  - One-to-Many (1:N): One record in the first table can relate to many records in another. Example: members → borrowed_items
+  - Implement with a foreign key in the “many” table (borrowed_items.member_id → members.id).
+  - Many-to-Many (M:N): Many records in one table relate to many records in another. Example: students ↔ courses: Implement by creating a junction (link) table, e.g. student_courses(student_id, course_id) with two foreign keys.
+  
 - What are transactions and isolation levels? Explain the problems each isolation level solves.
+  - A transaction is a group of database operations that are treated as a single logical unit of work — either all succeed or all fail.
+  - They follow the ACID principles:
+    - Atomicity: all or nothing
+    - Consistency: database stays valid
+    - Isolation: transactions don’t interfere with each other
+    - Durability: once committed, it’s saved even after crashes
+  
 - What's the difference between PRIMARY KEY, UNIQUE, and FOREIGN KEY constraints?
+  - PRIMARY KEY: Uniquely identifies each record in a table.
+  - UNIQUE: Ensures all values in a column are unique.
+  - FOREIGN KEY: Links a column to the primary key of another table.
+
 ---
 
 ## Coding Challenge 1: SQL Practice
