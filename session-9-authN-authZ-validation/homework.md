@@ -3,14 +3,116 @@
 ## Concept Questions
 
 - Difference between authentication and authorization
+  - Authentication = “Who are you?” It is the process of verifying identity.
+    - Examples:
+      - Logging in with username + password
+      - Using a fingerprint or face scan
+      - Using a token from Google login
+  - Authorization = “What can you do?” It is the process of determining what an authenticated user is allowed to access.
+    - Examples:
+      - Admin vs normal user permissions
+      - A user allowed to update only their own posts
+      - Access to specific APIs
+  - Key idea:
+    - You must authenticate before you can be authorized.
+
 - What are HTTP cookies? How do they work and what are their main use cases?
+  - Cookies are small pieces of data stored in the browser and sent to the server with each request to the same domain.
+  - How they work:
+    - Server sends a Set-Cookie header.
+    - Browser stores the cookie.
+    - Browser automatically attaches the cookie with every request to that server domain.
+    - Server reads cookie to identify session/user.
+  - Main use cases
+    - Session management (most common): login sessions, cart sessions, authenticated user tracking
+    - Personalization: language settings, preferences
+    - Analytics / tracking: keeping track of user behavior
+  
 - What are the limitations of cookies
+  - Size limit: about 4 KB per cookie
+  - Quantity limit: browser limits cookies per domain
+  - Security risks:
+    - vulnerable to XSS (if not HttpOnly)
+    - vulnerable to CSRF (because cookies auto-send)
+  - Stored on client-side only: easier for users to modify/delete
+  - Must be sent with every request → increases bandwidth
+  - Not good for storing sensitive data
+
 - What is JWT and how does it work?
+  - JWT = JSON Web Token. It’s a compact, signed token used for stateless authentication.
+  - How it works
+    - User logs in with username/password.
+    - Server generates a JWT and sends it to the client.
+    - Client stores it (usually in localStorage or memory).
+    - Client sends JWT in the Authorization: Bearer <token> header.
+    - Server verifies signature and extracts the user info — no session storage required.
+  
 - What are the advantages and disadvantages of using JWT compared to traditional session-based authentication?
+  - Advantages of JWT
+    - Stateless (server does not store sessions)
+    - Easy for scaling and microservices
+    - Can store more data inside the token
+    - Works well across domains/APIs
+  - Disadvantages of JWT
+    - Cannot be invalidated easily
+    - (server has no session table to delete)
+    - Long tokens → increase request size
+    - If stored in localStorage, may be vulnerable to XSS
+    - If long-lived, dangerous when stolen
+    - Rotating/refreshing requires more work
+  - Sessions Advantages
+    - Easy to invalidate (delete server-side session)
+    - Simpler and safer for traditional web apps
+  - Sessions Disadvantages
+    - Server must store sessions → scaling issues
+    - Need sticky sessions or shared session store
+  
 - How do you invalidate or blacklist JWT tokens?
+  - JWTs are stateless by design, so invalidation requires extra mechanisms:
+  - Common methods
+    - Maintain a token blacklist
+      - store invalid tokens (or their jti — token id) in a DB
+      - check against blacklist on each request
+    - Short-lived access tokens + refresh tokens
+      - access token expires quickly (like 5–15 minutes)
+      - reduces damage from stolen tokens
+    - Rotate refresh tokens
+      - invalidate the refresh token in DB upon logout
+    - Change the server signing key
+      - invalidates ALL tokens at once (drastic)
+  
 - What is password hashing and why is it important?
+  - Password hashing = converting a password into a one-way mathematical representation.
+  - Why important?
+    - Servers never store plain passwords.
+    - Even if database is stolen, hashing protects users.
+    - Good hashing algorithms are slow and salted → hard to brute-force.
+  - Secure password hashing algorithms
+    - bcrypt
+    - scrypt
+    - PBKDF2
+    - Argon2 (best modern standard)
+  - Hashing is not encryption — encryption is reversible; hashing is not.
+
 - What is the access / refresh token pattern
+  - A common authentication strategy using two tokens:
+  - Access Token
+    - Short-lived (5–15 minutes)
+    - Sent with every request
+    - Stored in memory
+    - Less risk if stolen
+  - Refresh Token
+    - Long-lived (days or weeks)
+    - Stored securely (httpOnly cookie or secure storage)
+    - Used only to request a new access token
+    - Server keeps refresh tokens in DB → can revoke them anytime
+  - Benefits
+    - Reduces harm if access token is stolen
+    - Allows logout by deleting refresh token
+    - Makes JWT safer
+
 - What is the Oauth2 flow
+  - OAuth2 is a framework for delegated authorization. It allows a user to give a third-party app limited access to their data without sharing their password.
 
 ---
 
