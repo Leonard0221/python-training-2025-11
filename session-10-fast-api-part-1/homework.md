@@ -3,20 +3,95 @@
 ## Concept Questions
 
 - Explain the difference between def and async def in FastAPI route handlers. When should you use each?
-
+  - def (sync) route:
+    - Runs in a normal thread from the thread pool.
+    - Good when you mostly do CPU-bound work or call blocking libraries (e.g., regular SQLAlchemy engine, blocking HTTP clients, heavy calculations).
+    - FastAPI will offload this to a worker thread so it doesn’t block the main event loop.
+  - async def (async) route:
+    - Runs directly on the event loop.
+    - You can await other async operations: async DB drivers, async HTTP calls, etc.
+    - Best when your work is I/O-bound and you have async libraries; lets FastAPI handle many concurrent requests efficiently
+  
 - What is dependency injection in FastAPI and how does it work behind the scene?
-
+  - Conceptually:
+    - You declare what your endpoint needs (db from get_db) instead of how to build it inside the function.
+    - FastAPI inspects the function’s parameters, sees Depends(get_db), and knows it must call get_db before calling the endpoint.
+  - Behind the scenes:
+    - FastAPI builds a dependency graph from route → dependencies → sub-dependencies, etc.
+    - For each request:
+    - It resolves dependencies in order (respecting yield for startup/cleanup).
+    - Injects the returned values as arguments into your path operation function.
+    - If any dependency raises an exception, FastAPI short-circuits and returns the appropriate response.
+  
 - How does FastAPI achieve automatic API documentation?
+  - FastAPI uses type hints + Pydantic models to automatically generate an OpenAPI (Swagger) schema.
+  - Every route (path, method, parameters, body models, responses, status codes) is registered in an internal OpenAPI structure.
+  - When you visit:
+    - /docs → interactive Swagger UI
+    - /redoc → ReDoc documentation
+  - These UIs are automatically generated from the OpenAPI schema, which in turn is generated from:
+    - function signatures and type hints,
+    - Pydantic models,
+    - parameter decorators (Path, Query, Body, etc.),
+    - and response_model definitions.
 
 - Explain the difference between Path, Query, Header, Body, and Cookie parameters in FastAPI.
+  - Path: values embedded in the URL path (/items/{item_id}), required by definition.
+  - Query: parameters after ? in the URL, often optional or used for filtering.
+  - Header: taken from HTTP headers (case-insensitive).
+  - Body: data in the request body (JSON, form, etc.). Typically mapped to Pydantic models.
+  - Cookie: values from the Cookie header.
 
 - What is the purpose of Pydantic models in FastAPI? How do they differ from SQLAlchemy/SQLModel database models?
+  - Pydantic models in FastAPI:
+    - Define the shape of data for:
+      - request bodies,
+      - response models,
+      - settings/config, etc.
+    - Perform validation and parsing (types, ranges, formats).
+    - Produce JSON-serializable output (.dict(), .model_dump() in Pydantic v2).
+    - Used heavily for OpenAPI schema generation.
+  - SQLAlchemy / SQLModel models:
+    - Represent database tables and columns.
+    - Handle persistence: queries, inserts, joins, relationships.
+    - Often include DB-specific details (indexes, constraints).
+  - You typically keep them separate because:
+    - DB schema ≠ API schema (you might hide internal fields, expose computed fields, etc.).
+    - Pydantic models are for data validation + API contracts.
+    - ORM models are for storage and business logic.
 
 - Explain how FastAPI's dependency caching works within a single request. Why is this important?
+  - Within one request, if the same dependency is used multiple times, FastAPI:
+    - Calls it once,
+    - Caches its result,
+    - Reuses the same value for each place it’s injected.
+  - Why it matters:
+    - Avoids duplicate work (DB sessions, expensive setup).
+    - Ensures consistency (all dependencies share the same view of data within one request).
+    - Important for resources that must be properly closed once per request (DB connections, external clients).
 
 - How does FastAPI handle request validation and what happens when validation fails? How can you customize error responses?
-
+  - How validation works:
+    - FastAPI uses Pydantic (v1 or v2) under the hood.
+    - For every request:
+      - It reads incoming data from path/query/body/headers/cookies.
+      - It converts them to the types specified by your function signature and Pydantic models.
+      - Pydantic runs validation rules (type checks, regex, ranges, custom validators).
+  - If validation fails:
+    - FastAPI raises a RequestValidationError.
+    - HTTP 422 Unprocessable Entity
+    - JSON body containing details:
+  - Customizing error responses
+    - override exception handlers
+    - customize HTTP errors with HTTPException
+  
 - Explain the difference between using Annotated[Session, Depends(get_db)] vs Session = Depends(get_db) for type hints. Which is recommended and why?
+  - Old/common style: Depends(get_db):
+    - Type checkers see db as type Session, but the dependency is hidden in the default.
+  - Newer, recommended style (typing-friendly): Annotated[Session, Depends(get_db)]
+    - Annotated attaches extra metadata (here: Depends(get_db)) to the type without overloading the default value.
+    - Static analysis tools, IDEs, and FastAPI itself read the type (Session) and the dependency (Depends(get_db)) more cleanly.
+    - Plays nicer with some linters and with pure type hints for non-FastAPI usage.
 
 ---
 
