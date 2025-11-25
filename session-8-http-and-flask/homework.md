@@ -102,7 +102,7 @@
 
 - What are Flask's request objects
   - Flask provides a global request object (from flask import request) that represents the incoming HTTP request.
-  - 
+  
 ---
 
 ## Coding Challenge:
