@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Blog - Home{% endblock %}
+
+{% block content %}
+<h2>Posts</h2>
+{% for post in posts %}
+    <article>
+        <h3>
+            <a href="{% url 'blog:post_detail' slug=post.slug %}">
+                {{ post.title }}
+            </a>
+        </h3>
+        <p>By {{ post.author }} on {{ post.published|date:"Y-m-d" }}</p>
+        <p>{{ post.content|truncatechars:150 }}</p>
+        <p>{{ post.get_excerpt }}</p>
+        {% if post.published_recently %}
+            <span style="color: red;">🆕 New!</span>
+        {% endif %}
+    </article>
+    <hr>
+{% empty %}
+    <p>No posts yet.</p>
+{% endfor %}
+{% endblock %}
