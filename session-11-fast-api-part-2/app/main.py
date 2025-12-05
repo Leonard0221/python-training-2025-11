@@ -29,9 +29,6 @@ def get_item(
     limit: Optional[int] = Query(None, lt=100, description="max items to return"),
     user_agent: str = Header(...),
 ):
-    '''
-    This api is to fetch item by id
-    '''
     
     return {
         'item_id': item_id,
